@@ -1,25 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import RichEditor from "./components/RichEditor";
+import RichEditors from "./components/RichEditors";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+    render() {
+        const viewMode = window.location.search.split('viewMode=')[1];
+
+        return (
+            viewMode === 'single' ? <RichEditor/> : <RichEditors/>
+        );
+    }
 }
-
 export default App;

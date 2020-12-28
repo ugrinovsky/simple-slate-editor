@@ -1,0 +1,16 @@
+.colorPanel {
+    position: absolute;
+    bottom: 100%;
+    display: flex;
+    left: 0;
+    width: 80px;
+    margin: auto auto;
+    padding: 6px;
+    margin-left: -6px;
+    flex-wrap: wrap;
+}
+
+.colorPanelItem {
+    width: 20px;
+    height: 20px;
+}
