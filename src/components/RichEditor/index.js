@@ -1,5 +1,5 @@
 import React from 'react'
-import { createEditor, Editor, Point, Transforms } from 'slate';
+import { createEditor, Editor, Node } from 'slate';
 
 import { Slate, Editable, withReact, ReactEditor } from 'slate-react';
 import isUrl from 'is-url';
@@ -35,21 +35,15 @@ const Leaf = ({ attributes, children, leaf }) => {
 
     return <span {...attributes}>{children}</span>
 }
-
 class App extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            value: [
-                {
-                    type: 'paragraph',
-                    children: [
-                        { text: '' },
-                    ],
-                },
-            ]
+            value: this.deserialize('')
         }
+
+        this.id = this.props.id;
 
         this.onChangeCallback = (value) => {
             this.setState({value});
@@ -64,6 +58,23 @@ class App extends React.Component {
     componentDidMount() {
         ReactEditor.focus(this.editor);
     }
+
+    serialize = value => {
+        return (
+            value
+                .map (n => Node.string (n))
+                .join ('\n')
+        );
+    };
+
+    deserialize = string => {
+    return string.split ('\n').map (line => {
+        return {
+            children: [{text: line}],
+        };
+    });
+    };
+
 
     insertLink = (href) => {
         if (window.getSelection().isCollapsed) {
@@ -90,7 +101,7 @@ class App extends React.Component {
         // }
         // const p = Point;
         // return this.Editor.next(this.editor);
-        this.props.onKeyDownHandler(event);
+        this.props.onKeyDownHandler && this.props.onKeyDownHandler(event);
     }
 
     onPasteCallback = (event) => {
@@ -102,7 +113,11 @@ class App extends React.Component {
     }
 
     onFocusCallback = () => {
-        this.props.onFocusCallback(this.editor);
+        this.props.onFocusCallback && this.props.onFocusCallback({
+            instance: this.editor,
+            id: this.id,
+            value: this.serialize(this.state.value)
+        });
     }
 
     render() {
@@ -112,9 +127,9 @@ class App extends React.Component {
                 value={this.state.value}
                 onChange={this.onChangeCallback}
             >
-                <Toolbar
-                    editor={this.editor}/>
+                {this.props.toolbarVisibility && <Toolbar editor={this.editor} />}
                 <Editable
+                    style={{minHeight: this.props.height}}
                     className="editor"
                     spellCheck
                     onKeyDown={this.onKeyDownCallback}
@@ -126,5 +141,10 @@ class App extends React.Component {
         )
     }
 }
+
+App.defaultProps = {
+    toolbarVisibility: true,
+    height: '300px',
+};
 
 export default App;

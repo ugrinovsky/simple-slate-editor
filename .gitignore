@@ -26,4 +26,4 @@ yarn.lock
 package-lock.json
 README.old.md
 .idea
-.eslintcacheq
+.eslintcache
