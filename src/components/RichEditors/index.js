@@ -1,10 +1,11 @@
 import React from 'react'
-import { createEditor, Editor, Point, Transforms } from 'slate';
 
 import RichEditor from '../RichEditor';
 
 import './styles.css';
 import {ReactEditor} from "slate-react";
+
+import {Transforms, Editor} from "slate";
 
 import {v4 as uuidv4} from 'uuid';
 
@@ -83,13 +84,21 @@ class RichEditors extends React.Component {
         }
         if (event.keyCode === 8 || event.keyCode === 38) {
             event.preventDefault ();
-            this.state.activeEditorIndex--;
 
-            if (this.state.activeEditorIndex > -1) {
-                ReactEditor.focus(this.state.editors[this.state.activeEditorIndex].instance);
+            if (this.state.activeEditorIndex > 0) {
+                this.state.activeEditorIndex--;
+                const editor = this.state.editors[this.state.activeEditorIndex].instance;
+
+                ReactEditor.focus(editor);
+                const editorEnd = Editor.end(editor, []);
+                Transforms.select(editor, editorEnd);
             }
 
-            if (this.state.editors.length && !this.state.editors[this.state.activeEditorIndex + 1].value.length) {
+            if (this.state.activeEditorIndex > -1) {
+
+            }
+
+            if (this.state.editors.length) {
                 const editors = this.state.editors;
                 editors.splice(this.state.activeEditorIndex + 1, 1);
                 this.setState({editors: editors});
