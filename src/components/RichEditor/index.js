@@ -1,5 +1,5 @@
 import React from 'react'
-import { createEditor, Editor, Node } from 'slate';
+import {createEditor, Editor, Node, Transforms} from 'slate';
 
 import { Slate, Editable, withReact, ReactEditor } from 'slate-react';
 import isUrl from 'is-url';
@@ -35,13 +35,37 @@ const Leaf = ({ attributes, children, leaf }) => {
 
     return <span {...attributes}>{children}</span>
 }
+
+const Element = ({ attributes, children, element}) => {
+    if (element.type === 'link') {
+        return <a className="link" href={element.url}>
+            <span className="linkTitle">{children}</span>
+        </a>
+    }
+    return <span {...attributes}>{children}</span>
+}
+
+const withLinks = editor => {
+    const { isInline } = editor;
+
+    editor.isInline = element => {
+        return element.type === 'link' ? true : isInline(element);
+    }
+
+    return editor;
+}
+
 class App extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            value: this.deserialize('')
-        }
+            value: [{
+                children: [{
+                    text: ''
+                }]
+            }]
+        };
 
         this.id = this.props.id;
 
@@ -51,8 +75,9 @@ class App extends React.Component {
 
         this.Editor = Editor;
 
-        this.editor = withReact(createEditor());
+        this.editor = withLinks(withReact(createEditor()));
         this.renderLeaf = props => <Leaf {...props} />;
+        this.renderElement = props => <Element {...props} />;
     }
 
     componentDidMount() {
@@ -78,29 +103,22 @@ class App extends React.Component {
 
     insertLink = (href) => {
         if (window.getSelection().isCollapsed) {
-            this.Editor.insertNode(this.editor, [{
-                link: true,
-                text: href,
-                href: href
-            }]);
+            Transforms.insertNodes(this.editor, {
+                type: 'link',
+                children: [{text: href}],
+                url: href
+            });
         } else {
             const selectedText = window.getSelection().toString();
-            this.Editor.insertNode(this.editor, [{
-                link: true,
-                text: selectedText,
-                href: href,
-            }]);
+            Transforms.insertNodes(this.editor, {
+                type: 'link',
+                children: [{text: selectedText}],
+                url: href
+            });
         }
     }
 
     onKeyDownCallback = (event) => {
-        // if (event.key === 'ArrowRight') {
-        //     event.preventDefault();
-        //     this.Editor.moveTo(5);
-        //     return true;
-        // }
-        // const p = Point;
-        // return this.Editor.next(this.editor);
         this.props.onKeyDownHandler && this.props.onKeyDownHandler(event);
     }
 
@@ -136,6 +154,7 @@ class App extends React.Component {
                     onPaste={this.onPasteCallback}
                     onFocus={this.onFocusCallback}
                     renderLeaf={this.renderLeaf}
+                    renderElement={this.renderElement}
                 />
             </Slate>
         )
