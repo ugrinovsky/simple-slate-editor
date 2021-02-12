@@ -106,12 +106,36 @@ class RichEditors extends React.Component {
         }
     }
 
+    generateEditors = () => {
+        let i = 1000;
+        const editors = [];
+        while(i--) {
+            const id = this.generateId();
+            const editor = this.createEditor(id);
+            editors.push({
+                template: editor,
+                instance: null,
+                id: id,
+                value: ''
+            });
+        }
+        this.setState({
+            editors: editors
+        });
+    }
+
+    componentDidMount() {
+        this.generateEditors();
+    }
+
     render() {
         return (
             <div>
-                {this.state.editors.map(editor => {
-                    return <div key={editor.id}>{editor.template}</div>;
-                })}
+                <div>
+                    {this.state.editors.map(editor => {
+                        return <div key={editor.id}>{editor.template}</div>;
+                    })}
+                </div>
             </div>
         )
     }
