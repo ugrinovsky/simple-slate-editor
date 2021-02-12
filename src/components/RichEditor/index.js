@@ -64,27 +64,47 @@ const wrapLink = (editor, url) => {
 const decorate = ([node, path]) => {
     const ranges = []
 
-    const promise = new Promise((resolve, regect) => {
-        setTimeout(() => {
-            if (Text.isText(node)) {
-                const { text } = node;
-                (linkify.match(text) || []).forEach(({ index, lastIndex, url }) => {
-                    ranges.push({
-                      anchor: { path, offset: lastIndex },
-                      focus: { path, offset: index },
-                      link: true,
-                      url: 'HUI PIZDA'
-                    });
-                  });
-            }
-        
-            resolve(ranges);
-        }, 1000);
-    });
+    if (Text.isText(node)) {
+        const { text } = node;
+        (linkify.match(text) || []).forEach(({ index, lastIndex, url }) => {
+            ranges.push({
+              anchor: { path, offset: lastIndex },
+              focus: { path, offset: index },
+              link: true,
+              url: url,
+                _waitData: true
+            });
+          });
+    }
 
-    return promise;
+    return ranges;
+}
 
-   
+class Link extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            data: ''
+        };
+
+        new Promise((resolve) => {
+            setTimeout(() => {
+                resolve('some url');
+            }, 2000);
+        }).then((result) => {
+            this.setState({data: result});
+        })
+    }
+    render() {
+        return(
+            <span>
+                <a className="link" href={this.props.url}>
+                    <span className="linkTitle">{this.state.data} {this.props.children}</span>
+                </a>
+             </span>
+        )
+    }
 }
 
 const Leaf = ({ attributes, children, leaf }) => {
@@ -107,12 +127,8 @@ const Leaf = ({ attributes, children, leaf }) => {
         children = <span style={{backgroundColor: leaf.background}}>{children}</span>
     }
     if (leaf.link) {
-        children = 
-         <span>
-            <a className="link" href={leaf.url}>
-                <span className="linkTitle">{children}</span>
-            </a>
-         </span>
+        children = <Link url={leaf.url} children={children} />
+
     }
 
     return <span {...attributes}>{children}</span>
